@@ -1,0 +1,16 @@
+IMDB/AG:
+python scripts/train_model.py -t bert-base-uncased -l 0_3_5_11 --data_dir ./data/ -d imdb -w ./models/ -b 8 -x 256
+
+python run_calibration.py -m ./models/bert-base-uncased/imdb/experiment_0_3_5_11_0/best.th -v ./data/text_cat/imdb/dev
+
+imdb: 0.9128444790840149_1.0661648511886597_1.0710119009017944_1.0701967477798462
+ag: 1.1184313297271729_1.1884899139404297_1.1800991296768188_1.1811261177062988
+
+python scripts/run_evaluation.py  -t 0.9128444790840149_1.0661648511886597_1.0710119009017944_1.0701967477798462 -c 0.9 -v ./data/text_cat/imdb/test -o model_1_0.9 -m ./models/bert-base-uncased/imdb/experiment_0_3_5_11_0/best.th 
+
+python scripts/run_evaluation.py  -t 1.1184313297271729_1.1884899139404297_1.1800991296768188_1.1811261177062988 -c 1.5 -v ./data/text_cat/ag/test -o model_1_0.9_ag -m ./models/bert-base-uncased/ag/experiment_0_3_5_11_0/best.th 
+
+
+
+NLI:
+python scripts/train_model.py -t bert-base-uncased -l 0_3_5_11 --data_dir ./data/ -d snli -w ./models/ -b 8 -x 256 -i
