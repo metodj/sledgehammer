@@ -1,3 +1,5 @@
 allennlp==0.8.4
 pytorch-pretrained-bert==0.6.2
 docopt==0.6.2
+scikit-learn==0.21.0
+overrides==3.1.0

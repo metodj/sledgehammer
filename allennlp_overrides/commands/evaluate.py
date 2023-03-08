@@ -82,7 +82,8 @@ def evaluate(model: Model,
              instances: Iterable[Instance],
              data_iterator: DataIterator,
              cuda_device: int,
-             batch_weight_key: str) -> Dict[str, Any]:
+             batch_weight_key: str,
+             dataset: str = 'ag') -> Dict[str, Any]:
     check_for_gpu(cuda_device)
     with torch.no_grad():
         model.eval()
@@ -102,13 +103,14 @@ def evaluate(model: Model,
         # Cumulative weight across all batches.
         total_weight = 0.0
 
-        logits = []
+        logits, targets = [], []
         for batch in generator_tqdm:
             batch_count += 1
             batch = nn_util.move_to_device(batch, cuda_device)
-
+            
             output_dict = model(**batch)
             logits.append(torch.stack(output_dict['logits']))
+            targets.append(int(batch['label']))
             loss = output_dict.get("loss")
 
             metrics = model.get_metrics()
@@ -135,8 +137,11 @@ def evaluate(model: Model,
             generator_tqdm.set_description(description, refresh=False)
 
         logits = torch.stack(logits)
-        print(logits.shape)
-        torch.save(logits, './imdb_logits.pt')
+        logits = torch.transpose(logits.squeeze(), 0, 1)
+        targets = torch.tensor(targets)
+        print(logits.shape, targets.shape)
+        torch.save(logits, f'./outputs/{dataset}_logits.pt')
+        torch.save(targets, f'./outputs/{dataset}_targets.pt')
 
         final_metrics = model.get_metrics(reset=True)
         if loss_count > 0:
