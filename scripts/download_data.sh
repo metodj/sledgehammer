@@ -88,18 +88,18 @@ function download_allennlp {
 download_nli https://nlp.stanford.edu/projects/snli/snli_1.0.zip snli snli dev test
 download_nli https://www.nyu.edu/projects/bowman/multinli/multinli_1.0.zip mnli multinli dev_matched dev_mismatched
 
-#### AG news and IMDB
-download_allennlp ag ag-news 1
-download_allennlp imdb imdb 0
+# #### AG news and IMDB
+# download_allennlp ag ag-news 1
+# download_allennlp imdb imdb 0
 
 
-#### SST
-mkdir $tmp_dir/sst
-wget -O $tmp_dir/sst/sst.zip http://nlp.stanford.edu/~socherr/stanfordSentimentTreebank.zip
-unzip $tmp_dir/sst/sst.zip -d $tmp_dir/sst/
+# #### SST
+# mkdir $tmp_dir/sst
+# wget -O $tmp_dir/sst/sst.zip http://nlp.stanford.edu/~socherr/stanfordSentimentTreebank.zip
+# unzip $tmp_dir/sst/sst.zip -d $tmp_dir/sst/
 
-base_dir=$(dirname $0)
-python $base_dir/process_sst.py $tmp_dir/sst/stanfordSentimentTreebank $out_dir/text_cat/sst/
+# base_dir=$(dirname $0)
+# python $base_dir/process_sst.py $tmp_dir/sst/stanfordSentimentTreebank $out_dir/text_cat/sst/
 
 if [ $delete_tmp -eq 1 ]; then
     /bin/rm -rf $tmp_dir

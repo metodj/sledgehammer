@@ -83,7 +83,7 @@ def evaluate(model: Model,
              data_iterator: DataIterator,
              cuda_device: int,
              batch_weight_key: str,
-             dataset: str = 'ag') -> Dict[str, Any]:
+             dataset: str = 'snli') -> Dict[str, Any]:
     check_for_gpu(cuda_device)
     with torch.no_grad():
         model.eval()

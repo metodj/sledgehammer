@@ -14,3 +14,10 @@ python scripts/run_evaluation.py  -t 1.1184313297271729_1.1884899139404297_1.180
 
 NLI:
 python scripts/train_model.py -t bert-base-uncased -l 0_3_5_11 --data_dir ./data/ -d snli -w ./models/ -b 8 -x 256 -i
+
+python run_calibration.py -m ./models/bert-base-uncased/snli/experiment_0_3_5_11_0/best.th -v ./data/nli/snli/dev
+
+snli: 0.949501097202301_1.0480422973632812_1.0353717803955078_1.0207339525222778
+
+python scripts/run_evaluation.py  -t 0.949501097202301_1.0480422973632812_1.0353717803955078_1.0207339525222778 -c 1.5 -v ./data/nli/snli/test -o model_1_0.9_ag -m ./models/bert-base-uncased/snli/experiment_0_3_5_11_0/best.th 
+
