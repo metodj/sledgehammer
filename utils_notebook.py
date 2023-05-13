@@ -61,9 +61,10 @@ def modal_probs_decreasing(
         return nr_decreasing
     
 
-def f_probs_ovr_poe_logits_weighted_generalized(logits, threshold=0.0, weights=None):
+def f_probs_ovr_poe_logits_weighted_generalized(logits, threshold=0.0, weights=None, noise=0.):
     L, N, C = logits.shape[0], logits.shape[1], logits.shape[2]
     probs = logits.numpy().copy()
+    probs = probs + noise
     probs[probs < threshold] = 0.0
     if weights is not None:
         assert logits.shape[0] == weights.shape[0]
@@ -71,16 +72,24 @@ def f_probs_ovr_poe_logits_weighted_generalized(logits, threshold=0.0, weights=N
             probs[l, :, :] = probs[l, :, :] ** weights[l]
     probs = np.cumprod(probs, axis=0)
     # normalize
-    for l in range(L):
-        for n in range(N):
+    n_ood = 0
+    for n in range(N):
+        ood = False
+        for l in range(L):
+        
             sum_l_n = probs[l, n, :].sum()
             if sum_l_n > 0.:
                 probs[l, n, :] = probs[l, n, :] / sum_l_n
             else:
+                ood = True
                 # probs[l, n, :] = (1 / C) * torch.ones(C)
                 # probs[l, n, :] = torch.zeros(C)
                 probs[l, n, :] = torch.softmax(logits[l, n, :], dim=0)
                 # probs[l, n, :] = (logits[:l + 1, n, :] > 0).sum(axis=0) / (logits[:l + 1, n, :] > 0).sum()
+
+        if ood:
+            n_ood += 1
+    print("n_ood: ", n_ood)
     return probs
 
 
@@ -109,7 +118,7 @@ def anytime_caching(_probs: torch.Tensor, N: int, L: int) -> torch.Tensor:
     return _probs_stateful.permute(1, 0, 2)
 
 
-def get_metrics_for_paper(logits: torch.Tensor, targets: torch.Tensor, model_name: str, thresholds: List[float] = [-0.01, -0.05, -0.1, -0.2, -0.25, -0.33, -0.5]):
+def get_metrics_for_paper(logits: torch.Tensor, targets: torch.Tensor, model_name: str, thresholds: List[float] = [-0.01, -0.05, -0.1, -0.2, -0.25, -0.33, -0.5], noise_pa: float = 0.):
 
     L = len(logits)
     N = len(targets)
@@ -120,7 +129,8 @@ def get_metrics_for_paper(logits: torch.Tensor, targets: torch.Tensor, model_nam
     preds = {i: torch.argmax(probs, dim=2)[i, :] for i in range(L)}
     acc = [(targets == preds[i]).sum() / len(targets) for i in range(L)]
 
-    probs_pa = torch.tensor(f_probs_ovr_poe_logits_weighted_generalized(logits, weights=(np.arange(1, L + 1, 1, dtype=float) / L)))
+    probs_pa = torch.tensor(f_probs_ovr_poe_logits_weighted_generalized(logits, weights=(np.arange(1, L + 1, 1, dtype=float) / L), noise=noise_pa))
+    # probs_pa = torch.tensor(f_probs_ovr_poe_logits_weighted_generalized(logits, weights=None, noise=noise_pa))
     preds_pa = {i: torch.argmax(probs_pa, dim=2)[i, :] for i in range(L)}
     acc_pa = [(targets == preds_pa[i]).sum() / len(targets) for i in range(L)]
 
